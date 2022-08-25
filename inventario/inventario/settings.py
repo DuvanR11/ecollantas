@@ -9,13 +9,14 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
+import os
 from pathlib import Path
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+IS_HEROKU = "DYNO" in os.environ
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -23,9 +24,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-pi2np$qaj-yh6ly-#gnq7(m0t^+4^dt+9uib)554e27f+w0bgk'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+if 'SECRET_KEY' in os.environ:
+    SECRET_KEY = os.environ["SECRET_KEY"]
 
-ALLOWED_HOSTS = []
+
+# Generally avoid wildcards(*). However since Heroku router provides hostname validation it is ok
+if IS_HEROKU:
+    ALLOWED_HOSTS = ["*"]
+else:
+    ALLOWED_HOSTS = []
+
+# SECURITY WARNING: don't run with debug turned on in production!
+if not IS_HEROKU:
+    DEBUG = True
 
 
 # Application definition
@@ -77,8 +88,12 @@ WSGI_APPLICATION = 'inventario.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'd707q985rk41gc',
+        'USER': 'mgzjzdgfbtsgon',
+        'PASSWORD': '3d6f7e622d0d492a3ef25e708b5e13b6a80dcec7ff3aaf418da393b1cb35b764',
+        'HOST': 'ec2-44-206-214-233.compute-1.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
@@ -116,16 +131,16 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
-import os
 
-STATIC_URL = 'static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
 STATIC_TMP = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = (
-    (os.path.join(BASE_DIR, 'static'),)
+    (os.path.join(BASE_DIR, 'ecollantas/static'),)
 )
-STATICFILES_STORAGE = 'whitenoise.storage.CompressdManifestStaticFilesStorage'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 # Default primary key field type
